@@ -1,13 +1,12 @@
-    var arp  = require('./index')
-      , tbl  = { ipaddrs: {}, ifnames : {} }
-      , util = require('util')
-      ;
+const { getTable, getIPMap, findByMAC } = require('.');
 
-    arp.arpTable(function(err, entry) {
-      if (err) console.log('arp: ' + err.message);
-      if (!entry) return console.log(util.inspect(tbl, { depth: null }));
+(async () => {
+  // Get the entire ARP table
+  console.log(await getTable());
 
-      tbl.ipaddrs[entry.ip] = { ifname : entry.ifname, mac: entry.mac };
-      if (!tbl.ifnames[entry.ifname]) tbl.ifnames[entry.ifname] = {};
-      tbl.ifnames[entry.ifname][entry.mac] = entry.ip;
-    });
+  // ES6 Map from IP addresses to devices (see type signature)
+  console.log(await getIPMap());
+
+  // Can also find a device based by its MAC address (case-insensitive)
+  console.log(await findByMAC('xx:xx:xx:xx:xx:xx'));
+})();

@@ -1,22 +1,18 @@
 {
-  "name"           : "arp-a-x"
-, "version"        : "0.5.3"
-, "description"    : "node.js native implementation (when possible) of 'arp -a'"
-, "author": {
-    "name"           : "Marshall Rose"
-  , "email"          : "mrose17@gmail.com"
+  "name": "arp-a-x-2",
+  "version": "0.5.3",
+  "description": "Modernized version of the arp-a-x package",
+  "author": "Florian Klampfer <mail@qwtel.com> (https://qwtel.com/)",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/qwtel/arp-a-x-2.git"
+  },
+  "keywords": [
+    "arp",
+    "arp table"
+  ],
+  "main": "./index.js",
+  "engines": {
+    "node": ">=11"
   }
-, "repository": {
-    "type"         : "git",
-    "url"          : "https://github.com/stickpin/node-arp-a-x.git"
-  }
-, "bugs"           : {
-    "url"          : "https://github.com/stickpin/node-arp-a-x/issues"
-  }
-, "keywords"       : [ "arp", "arp table" ]
-, "main"           : "./index.js"
-, "engines": {
-    "node"         : ">=0.10"
-  }
-, "readmeFilename" : "README.md"
 }

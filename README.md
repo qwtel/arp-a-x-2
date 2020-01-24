@@ -1,48 +1,30 @@
-node-arp-a-x
-==========
+# arp-a-x-2
 
-A node.js native implementation (when possible) of "arp -a"
+Modernized version of the [`arp-a-x`](https://www.npmjs.com/package/arp-a-x-2) package.
+Like the original uses native implementation when possible. 
+Returns promises and provides JSDoc types for VSCode and TypeScript integration.
+Note that the API has changed and is not backwards compatible!
 
-Why not use [the arp module](https://github.com/teknopaul/arp)?
-I dislike parsing programmatic output (which can change at any time),
-and prefer using API-based approaches. That's possible for Linux and Mac OS.
+## Install
 
-Also, I wanted a node.js module that returns the entire ARP table.
-
-
-Install
--------
-
-    npm install -g --unsafe-perm arp-a-x
+    npm install -g --unsafe-perm arp-a-x-2
 
 
-API
----
+## Usage
 
-    var arp = require('arp-a-x')
-      , tbl = { ipaddrs: {}, ifnames : {} }
-      ;
 
-    arp.table(function(err, entry) {
-      if (!!err) return console.log('arp: ' + err.message);
-      if (!entry) return;
+```js
+const { getTable, getIPMap, findByMAC } = require('arp-a-x-2');
 
-      tbl.ipaddrs[entry.ip] = entry.mac;
-      if (!tbl.ifnames[entry.ifname]) tbl.ifnames[entry.ifname] = {};
-      tbl.ifnames[entry.ifname][entry.mac] = entry.ip;
-    });
+(async () => {
+  // Get the entire ARP table
+  console.log(await getTable());
 
-# Thanks
-Thanks to everyone who's helped contribute code, feedback and support.  In particular:
-* [TheThingSystem](https://github.com/TheThingSystem/node-arp-a) - for the original node-arp-a
+  // ES6 Map from IP addresses to ARP table entries
+  console.log(await getIPMap());
 
-License
-=======
+  // Can also find a device based by its MAC address (case-insensitive)
+  console.log(await findByMAC('xx:xx:xx:xx:xx:xx'));
+})();
+```
 
-[MIT](http://en.wikipedia.org/wiki/MIT_License) license. Freely have you received, freely give.
-
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the 'Software'), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
