@@ -3,6 +3,7 @@
 **ARP** **A**ll Cross (**X**) Platform Version **2**
 
 Modernized version of the [`arp-a-x`](https://www.npmjs.com/package/arp-a-x-2) package.
+
 Like the original uses native implementation when possible.
 Returns promises and provides JSDoc types for VSCode and TypeScript integration.
 
