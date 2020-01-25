@@ -2,16 +2,16 @@
 const child = require('child_process');
 const fs = require('fs').promises;
 
-const { once, slurp } = require('./util');
+const { once, slurp, groupBy } = require('./util');
 
 /** 
  * @type {() => Promise<Array<{ ip: string, mac: string, flag?: string, iface?: string, ifname?: string }>>}
  */
-let getTable = () => { throw Error('Unsupported platform') };
+let arpTable = () => { throw Error('Unsupported platform') };
 
 if (process.platform.indexOf('darwin') === 0) {
   const arp = require('./build/Release/macos.node');
-  getTable = () => arp.arpTable();
+  arpTable = () => arp.arpTable();
 }
 
 if (process.platform.indexOf('linux') === 0) {
@@ -24,7 +24,7 @@ if (process.platform.indexOf('linux') === 0) {
   
    */
 
-  getTable = async function () {
+  arpTable = async function () {
     const data = await fs.readFile('/proc/net/arp');
     return data.toString().split('\n').map((line, i) => {
       if (i === 0) return null;
@@ -55,7 +55,7 @@ if (process.platform.indexOf('win') === 0) {
 
   const RE_IPV4_MAC = /((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?))\s+(([0-9a-fA-F]{2}(:|-)){5}[0-9a-fA-F]{2})/iu;
 
-  getTable = async function () {
+  arpTable = async function () {
     const arp = child.spawn('arp', ['-a']);
     const stdout = await slurp(arp.stdout);
     const code = await once(arp, 'close');
@@ -75,31 +75,77 @@ if (process.platform.indexOf('win') === 0) {
 }
 
 /** 
- * @returns {Promise<Map<string, { ip: string, mac: string, flag?: string, iface?: string, ifname?: string }>>}
+ * @returns {Promise<Map<string, Array<{ ip: string, mac: string, flag?: string, iface?: string, ifname?: string }>>>}
  */
-const getMACMap = async () => new Map((await getTable()).map(x => [x.mac.toLowerCase(), x]));
+const ipLookupMap = async () => groupBy(await arpTable(), x => x.ip);
 
 /** 
- * @returns {Promise<Map<string, { ip: string, mac: string, flag?: string, iface?: string, ifname?: string }>>}
+ * @returns {Promise<Map<string, Array<{ ip: string, mac: string, flag?: string, iface?: string, ifname?: string }>>>}
  */
-const getIPMap = async () => new Map((await getTable()).map(x => [x.ip, x]));
+const macLookupMap = async () => groupBy(await arpTable(), x => x.mac.toLowerCase());
 
 /** 
  * @param {string} ip A local IPv4 address as string
- * @returns {Promise<{ ip: string, mac: string, flag?: string, iface?: string, ifname?: string } | undefined>} The ARP table entry for the given IP address or undefined
+ * @returns {Promise<Array<{ ip: string, mac: string, flag?: string, iface?: string, ifname?: string }> | undefined>} 
+ *  The ARP table entry for the given IP address or undefined
+ */
+const ipLookup = (ip) => ipLookupMap().then(m => m.get(ip));
+
+/** 
+ * @param {string} mac A local MAC address as hex-string (case-insensitive)
+ * @returns {Promise<Array<{ ip: string, mac: string, flag?: string, iface?: string, ifname?: string }> | undefined>} 
+ *  The ARP table entry for the given MAC address or undefined
+ */
+const macLookup = (mac) => macLookupMap().then(m => m.get(mac.toLowerCase()));
+
+
+// FOR BACKWARDS-COMPATIBILITY ONLY
+// --------------------------------
+
+/** 
+ * @returns {Promise<Map<string, { ip: string, mac: string, flag?: string, iface?: string, ifname?: string }>>}
+ * @deprecated Doesn't properly deal with the case when a MAC address has more than 1 IP. 
+ *   Use `macLookupMap` instead.
+ */
+const getMACMap = async () => new Map((await arpTable()).map(x => [x.mac.toLowerCase(), x]));
+
+/** 
+ * @returns {Promise<Map<string, { ip: string, mac: string, flag?: string, iface?: string, ifname?: string }>>}
+ * @deprecated Doesn't properly deal with the case when an IP address is assigned to more than 1 device. 
+ *   Use `ipLookupMap` instead.
+ */
+const getIPMap = async () => new Map((await arpTable()).map(x => [x.ip, x]));
+
+/** 
+ * @param {string} ip A local IPv4 address as string
+ * @returns {Promise<{ ip: string, mac: string, flag?: string, iface?: string, ifname?: string } | undefined>} 
+ *  The ARP table entry for the given MAC address or undefined
+ * @deprecated Doesn't properly deal with the case when an IP address is assigned to more than 1 device. 
+ *   Use `ipLookup` instead.
  */
 const findByIP = (ip) => getIPMap().then(m => m.get(ip));
 
 /** 
  * @param {string} mac A local MAC address as hex-string (case-insensitive)
- * @returns {Promise<{ ip: string, mac: string, flag?: string, iface?: string, ifname?: string } | undefined>} The ARP table entry for the given MAC address or undefined
+ * @returns {Promise<{ ip: string, mac: string, flag?: string, iface?: string, ifname?: string } | undefined>} 
+ *  The ARP table entry for the given MAC address or undefined
+ * @deprecated Doesn't properly deal with the case when a MAC address has more than 1 IP. 
+ *   Use `macLookup` instead.
  */
 const findByMAC = (mac) => getMACMap().then(m => m.get(mac.toLowerCase()));
 
 module.exports = {
-  getTable,
-  getMACMap,
+  arpTable,
+  table: arpTable,
+  getTable: arpTable,
+  ipLookupMap,
+  macLookupMap,
+  ipLookup,
+  macLookup,
+  // ---
   getIPMap,
+  getMACMap,
   findByIP,
   findByMAC,
-}
+};
+

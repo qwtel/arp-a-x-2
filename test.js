@@ -1,12 +1,12 @@
-const { getTable, getIPMap, findByMAC } = require('.');
+const { arpTable, ipLookupMap, macLookup } = require('.');
 
 (async () => {
   // Get the entire ARP table
-  console.log(await getTable());
+  console.log(await arpTable());
 
   // ES6 Map from IP addresses to devices (see type signature)
-  console.log(await getIPMap());
+  console.log(await ipLookupMap());
 
   // Can also find a device based by its MAC address (case-insensitive)
-  console.log(await findByMAC('xx:xx:xx:xx:xx:xx'));
+  console.log(await macLookup('xx:xx:xx:xx:xx:xx'));
 })();
