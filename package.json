@@ -5,14 +5,21 @@
   "author": "Florian Klampfer <mail@qwtel.com> (https://qwtel.com/)",
   "repository": {
     "type": "git",
-    "url": "https://github.com/qwtel/arp-a-x-2.git"
+    "url": "git+https://github.com/qwtel/arp-a-x-2.git"
   },
   "keywords": [
     "arp",
-    "arp table"
+    "arp-table",
+    "mac-lookup"
   ],
   "main": "./index.js",
   "engines": {
     "node": ">=11"
-  }
+  },
+  "scripts": {
+    "install": "node-gyp rebuild"
+  },
+  "gypfile": true,
+  "homepage": "https://github.com/qwtel/arp-a-x-2#readme",
+  "license": "MIT"
 }
