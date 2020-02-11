@@ -28,17 +28,17 @@ namespace Arp {
   // step 1: fetch the arp table
 
     if (sysctl(mib, (sizeof mib / sizeof mib[0]) - 1, NULL, &len, NULL, 0) < 0) {
-      isolate->ThrowException(v8::Exception::Error(String::NewFromUtf8(isolate, "sysctl failed to get length for ARP table.")));
+      isolate->ThrowException(v8::Exception::Error(String::NewFromUtf8(isolate, "sysctl failed to get length for ARP table.").ToLocalChecked()));
       return;
     }
 
     if ((head = ((char *) malloc(len))) == NULL) {
-      isolate->ThrowException(v8::Exception::Error(String::NewFromUtf8(isolate, "malloc failed to allocate return buffer for ARP table.")));
+      isolate->ThrowException(v8::Exception::Error(String::NewFromUtf8(isolate, "malloc failed to allocate return buffer for ARP table.").ToLocalChecked()));
       return;
     }
 
     if (sysctl(mib, (sizeof mib / sizeof mib[0]) - 1, head, &len, NULL, 0) < 0) {
-      isolate->ThrowException(v8::Exception::Error(String::NewFromUtf8(isolate, "sysctl failed to retrieve ARP table.")));
+      isolate->ThrowException(v8::Exception::Error(String::NewFromUtf8(isolate, "sysctl failed to retrieve ARP table.").ToLocalChecked()));
       return;
     }
     tail = head + len;
@@ -58,6 +58,7 @@ namespace Arp {
     }
 
     Local<Array> result = Array::New(isolate);
+    Local<Context> context = isolate->GetCurrentContext();
 
   // step 3: fill-in the array
 
@@ -80,10 +81,10 @@ namespace Arp {
       snprintf(lladdr, sizeof lladdr, "%02x:%02x:%02x:%02x:%02x:%02x", ll[0], ll[1], ll[2], ll[3], ll[4], ll[5]);
 
       Local<Object> entry = Object::New(isolate);
-      entry->Set(String::NewFromUtf8(isolate, "ip"), String::NewFromUtf8(isolate, inet_ntoa(sin->sin_addr)));
-      entry->Set(String::NewFromUtf8(isolate, "ifname"), String::NewFromUtf8(isolate, ifx ? ifx -> if_name : ""));
-      entry->Set(String::NewFromUtf8(isolate, "mac"), String::NewFromUtf8(isolate, lladdr));
-      result->Set(i++, entry);
+      entry->Set(context, String::NewFromUtf8(isolate, "ip").ToLocalChecked(), String::NewFromUtf8(isolate, inet_ntoa(sin->sin_addr)).ToLocalChecked());
+      entry->Set(context, String::NewFromUtf8(isolate, "ifname").ToLocalChecked(), String::NewFromUtf8(isolate, ifx ? ifx -> if_name : "").ToLocalChecked());
+      entry->Set(context, String::NewFromUtf8(isolate, "mac").ToLocalChecked(), String::NewFromUtf8(isolate, lladdr).ToLocalChecked());
+      result->Set(context, i++, entry);
     }
 
     if_freenameindex(ifp);

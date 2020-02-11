@@ -14,7 +14,7 @@
   ],
   "main": "./index.js",
   "engines": {
-    "node": ">=11"
+    "node": ">=13"
   },
   "scripts": {
     "install": "node-gyp rebuild"
