@@ -1,5 +1,7 @@
 # arp-a-x-2
 
+__DEPRECATION WARNING__: I've originally used this package to avoid assinging static IPs in a local network. This turned out to be an unreliable and unworkable solution. As a result, this package is now archived.
+
 **ARP** **A**ll Cross (**X**) Platform Version **2**
 
 Modernized version of the [`arp-a-x`](https://www.npmjs.com/package/arp-a-x-2) package.
